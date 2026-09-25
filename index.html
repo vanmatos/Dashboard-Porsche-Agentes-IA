@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Porsche Analytics | Executive Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts: Inter e Playfair Display (para um toque mais elegante) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        porsche: {
+                            dark: '#0a0a0a',       // Fundo principal um pouco mais profundo
+                            card: '#141414',       // Fundo dos cards
+                            light: '#F8F9FA',      // Texto claro
+                            rosegold: '#D48A96',   // Rose gold mais vibrante e claro
+                            rosegold_dark: '#A65D68', // Tom mais escuro para hover/gradientes
+                            champagne: '#FCEFD8',  // Champagne mais luminoso
+                            gray: '#A0A0A0',       // Textos secundários mais legíveis
+                            border: '#2a2a2a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #F8F9FA;
+            /* Scrollbar styling */
+            scrollbar-width: thin;
+            scrollbar-color: #D48A96 #141414;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #141414;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D48A96;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A65D68;
+        }
+        
+        .glass-card {
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 138, 150, 0.15); /* Borda com leve tom rose gold */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Custom Select Styling */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23D48A96'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1em;
+        }
+
+        /* Subtle animated gradient background for the header */
+        .header-gradient {
+            background: linear-gradient(90deg, rgba(10,10,10,1) 0%, rgba(30,20,25,0.95) 50%, rgba(10,10,10,1) 100%);
+        }
+        
+        /* Text gradient for highlights */
+        .text-gradient {
+            background: linear-gradient(to right, #FCEFD8, #D48A96);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 header-gradient backdrop-blur-md border-b border-porsche-border px-6 py-4 flex justify-between items-center">
+        
+        <!-- Brand / Logo Area -->
+        <div class="flex items-center gap-4">
+            <!-- Abstração do Brasão Porsche -->
+            <div class="w-9 h-11 bg-gradient-to-br from-porsche-champagne via-porsche-rosegold to-porsche-rosegold_dark rounded-sm flex items-center justify-center p-[1px] shadow-[0_0_10px_rgba(212,138,150,0.3)] hover:scale-105 transition-transform">
+                <div class="w-full h-full bg-porsche-dark flex items-center justify-center">
+                    <i class="ph ph-shield-check text-xl text-porsche-rosegold"></i>
+                </div>
+            </div>
+            
+            <!-- Tipografia da Marca -->
+            <div class="flex flex-col">
+                <h1 class="text-xl md:text-2xl tracking-[0.35em] font-semibold text-porsche-light uppercase leading-none mt-1">
+                    Porsche
+                </h1>
+                <p class="text-xs md:text-sm font-serif italic text-porsche-rosegold mt-1 tracking-wide">
+                    Analytics Dashboard
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Side: User/Context -->
+        <div class="flex items-center gap-6">
+            <div class="text-right hidden sm:block">
+                <p class="text-[10px] text-porsche-gray uppercase tracking-widest mb-1">Executive Insights</p>
+                <div class="flex items-center justify-end gap-1.5 text-porsche-champagne">
+                    <i class="ph ph-crown text-base"></i>
+                    <span class="font-medium text-sm">Diretoria Comercial</span>
+                </div>
+            </div>
+            <!-- Avatar Feminino e Sofisticado -->
+            <div class="h-10 w-10 rounded-full border border-porsche-rosegold/50 bg-porsche-card flex items-center justify-center overflow-hidden shadow-lg cursor-pointer hover:border-porsche-champagne transition-colors">
+                <img src="https://placehold.co/100x100/141414/D48A96?text=DC&font=playfair" alt="User Profile" class="h-full w-full object-cover opacity-90 hover:opacity-100 transition-opacity">
+            </div>
+        </div>
+
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-6 flex flex-col gap-6 max-w-[1600px] mx-auto w-full">
+        
+        <!-- Filters Section -->
+        <section class="glass-card rounded-xl p-5 shadow-lg flex flex-col md:flex-row gap-4 items-end">
+            <div class="w-full md:w-1/4">
+                <label class="block text-xs uppercase tracking-wider text-porsche-gray mb-2">Modelo</label>
+                <select id="filter-model" class="w-full bg-porsche-dark border border-porsche-border text-porsche-light rounded-lg px-4 py-2.5 focus:outline-none focus:border-porsche-rosegold transition-colors">
+                    <option value="all">Todos os Modelos</option>
+                    <!-- Options populated by JS -->
+                </select>
+            </div>
+            <div class="w-full md:w-1/4">
+                <label class="block text-xs uppercase tracking-wider text-porsche-gray mb-2">Status de Entrega</label>
+                <select id="filter-status" class="w-full bg-porsche-dark border border-porsche-border text-porsche-light rounded-lg px-4 py-2.5 focus:outline-none focus:border-porsche-rosegold transition-colors">
+                    <option value="all">Todos os Status</option>
+                    <!-- Options populated by JS -->
+                </select>
+            </div>
+            <div class="w-full md:w-1/4">
+                <label class="block text-xs uppercase tracking-wider text-porsche-gray mb-2">Estado (UF)</label>
+                <select id="filter-state" class="w-full bg-porsche-dark border border-porsche-border text-porsche-light rounded-lg px-4 py-2.5 focus:outline-none focus:border-porsche-rosegold transition-colors">
+                    <option value="all">Todos os Estados</option>
+                    <!-- Options populated by JS -->
+                </select>
+            </div>
+            <div class="w-full md:w-1/4 flex justify-end">
+                <button id="btn-reset" class="px-6 py-2.5 bg-transparent border border-porsche-rosegold text-porsche-rosegold rounded-lg hover:bg-porsche-rosegold hover:text-white transition-all flex items-center gap-2">
+                    <i class="ph ph-arrows-counter-clockwise"></i>
+                    Limpar Filtros
+                </button>
+            </div>
+        </section>
+
+        <!-- KPIs Section -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- KPI 1 -->
+            <div class="glass-card rounded-xl p-6 relative overflow-hidden group hover:border-porsche-rosegold/60 hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500">
+                    <i class="ph ph-currency-circle-dollar text-7xl text-porsche-rosegold"></i>
+                </div>
+                <p class="text-xs uppercase tracking-wider text-porsche-gray mb-1 font-medium">Receita Total</p>
+                <h2 id="kpi-revenue" class="font-serif text-3xl font-semibold text-gradient">R$ 0,00</h2>
+            </div>
+            
+            <!-- KPI 2 -->
+            <div class="glass-card rounded-xl p-6 relative overflow-hidden group hover:border-porsche-rosegold/60 hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500">
+                    <i class="ph ph-car-profile text-7xl text-porsche-rosegold"></i>
+                </div>
+                <p class="text-xs uppercase tracking-wider text-porsche-gray mb-1 font-medium">Volume de Vendas</p>
+                <h2 id="kpi-volume" class="font-serif text-3xl font-semibold text-porsche-light">0 <span class="text-sm font-sans text-porsche-gray font-normal">unidades</span></h2>
+            </div>
+
+            <!-- KPI 3 -->
+            <div class="glass-card rounded-xl p-6 relative overflow-hidden group hover:border-porsche-rosegold/60 hover:-translate-y-1 transition-all duration-300">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500">
+                    <i class="ph ph-chart-line-up text-7xl text-porsche-rosegold"></i>
+                </div>
+                <p class="text-xs uppercase tracking-wider text-porsche-gray mb-1 font-medium">Ticket Médio</p>
+                <h2 id="kpi-ticket" class="font-serif text-3xl font-semibold text-porsche-champagne">R$ 0,00</h2>
+            </div>
+
+            <!-- KPI 4 -->
+            <div class="glass-card rounded-xl p-6 relative overflow-hidden group hover:border-porsche-rosegold/60 hover:-translate-y-1 transition-all duration-300 flex justify-between items-end">
+                <div class="z-10">
+                    <p class="text-xs uppercase tracking-wider text-porsche-gray mb-2 font-medium">Perfil da Frota</p>
+                    <div class="flex items-baseline gap-2">
+                        <h2 id="kpi-new" class="font-serif text-2xl font-semibold text-porsche-light">0</h2>
+                        <span class="text-xs text-porsche-gray font-medium bg-porsche-dark/50 px-2 py-0.5 rounded">0 KM</span>
+                    </div>
+                    <div class="flex items-baseline gap-2 mt-2">
+                        <h2 id="kpi-used" class="font-serif text-2xl font-semibold text-porsche-light">0</h2>
+                        <span class="text-xs text-porsche-gray font-medium bg-porsche-dark/50 px-2 py-0.5 rounded">Usados</span>
+                    </div>
+                </div>
+                <div class="h-14 w-14 rounded-full border border-porsche-rosegold/50 bg-gradient-to-br from-porsche-dark to-porsche-rosegold/20 flex items-center justify-center z-10 shadow-[0_0_15px_rgba(212,138,150,0.2)]">
+                    <i class="ph ph-sparkle text-2xl text-porsche-rosegold"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Insights Section -->
+        <section class="glass-card rounded-xl p-6 border-l-4 border-l-porsche-rosegold">
+            <div class="flex items-start gap-4">
+                <div class="p-3 bg-porsche-rosegold/10 rounded-lg">
+                    <i class="ph ph-lightbulb text-2xl text-porsche-rosegold"></i>
+                </div>
+                <div>
+                    <h3 class="font-serif text-lg text-porsche-light mb-1">Insight Regional</h3>
+                    <p id="insight-text" class="text-sm text-porsche-gray leading-relaxed">
+                        Analisando os dados...
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Chart: Top Models Revenue -->
+            <div class="glass-card rounded-xl p-6 flex flex-col min-h-[400px]">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-serif text-lg text-porsche-light border-l-2 border-porsche-rosegold pl-3">Top 10 Modelos por Receita</h3>
+                </div>
+                <div class="flex-grow relative w-full h-full">
+                    <canvas id="chartRevenue"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart: Payment Methods (Pie) -->
+            <div class="glass-card rounded-xl p-6 flex flex-col min-h-[400px]">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-serif text-lg text-porsche-light border-l-2 border-porsche-rosegold pl-3">Distribuição por Pagamento</h3>
+                </div>
+                <div class="flex-grow relative w-full h-full flex justify-center items-center">
+                    <!-- Adjusted width/height wrapper for pie chart to look good -->
+                    <div class="w-full max-w-[350px] aspect-square">
+                        <canvas id="chartPayment"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart: Delivery Status -->
+            <div class="glass-card rounded-xl p-6 flex flex-col min-h-[400px]">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-serif text-lg text-porsche-light border-l-2 border-porsche-rosegold pl-3">Distribuição por Status de Entrega</h3>
+                </div>
+                <div class="flex-grow relative w-full h-full">
+                    <canvas id="chartStatus"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart: Top Cities -->
+            <div class="glass-card rounded-xl p-6 flex flex-col min-h-[400px]">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-serif text-lg text-porsche-light border-l-2 border-porsche-rosegold pl-3">Top 5 Cidades por Volume de Vendas</h3>
+                </div>
+                <div class="flex-grow relative w-full h-full">
+                    <canvas id="chartCities"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Table Section -->
+        <section class="glass-card rounded-xl p-6 overflow-hidden flex flex-col mb-10">
+            <h3 class="font-serif text-lg text-porsche-light border-l-2 border-porsche-rosegold pl-3 mb-4">Últimas Transações Registradas</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-porsche-border text-xs uppercase tracking-wider text-porsche-gray">
+                            <th class="py-3 px-4 font-medium">Cliente</th>
+                            <th class="py-3 px-4 font-medium">Modelo</th>
+                            <th class="py-3 px-4 font-medium text-right">Valor</th>
+                            <th class="py-3 px-4 font-medium">Pagamento</th>
+                            <th class="py-3 px-4 font-medium">Local</th>
+                            <th class="py-3 px-4 font-medium">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="text-sm divide-y divide-porsche-border/50">
+                        <!-- Rows populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-between items-center text-xs text-porsche-gray">
+                <span id="table-info">Mostrando 0 registros</span>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // 1. Data Injection (Data extracted from python execution)
+        const rawData = [
+            {"id_venda": 6, "data_str": "N/A", "nome_cliente": "Michael Adams", "modelo_porsche": "718 Cayman", "ano_modelo": 2022, "preco_venda": 79500.0, "quilometragem_veiculo": 9800, "forma_pagamento": "Credit Card", "cidade": "Boston", "estado": "MA", "vendedor": "Kevin", "status_entrega": "Delivered"},
+            {"id_venda": 7, "data_str": "2024-03-14", "nome_cliente": "Sophia Miller", "modelo_porsche": "911 Turbo S", "ano_modelo": 2024, "preco_venda": 235000.0, "quilometragem_veiculo": 1200, "forma_pagamento": "Wire Transfer", "cidade": "Seattle", "estado": "WA", "vendedor": "Amanda Scott", "status_entrega": "Delivered"},
+            {"id_venda": 8, "data_str": "2024-04-18", "nome_cliente": "Daniel Jones", "modelo_porsche": "Cayenne Coupe", "ano_modelo": 2023, "preco_venda": 112750.0, "quilometragem_veiculo": 6400, "forma_pagamento": "Financing", "cidade": "Austin", "estado": "TX", "vendedor": "Brian Hall", "status_entrega": "In Transit"},
+            {"id_venda": 9, "data_str": "N/A", "nome_cliente": "Olivia Brown", "modelo_porsche": "Macan S", "ano_modelo": 2021, "preco_venda": 68900.0, "quilometragem_veiculo": 28, "forma_pagamento": "Cash", "cidade": "Denver", "estado": "CO", "vendedor": "Jessica", "status_entrega": "Pending"},
+            {"id_venda": 10, "data_str": "2024-05-22", "nome_cliente": "Ethan Wilson", "modelo_porsche": "Taycan 4S", "ano_modelo": 2024, "preco_venda": 121000.0, "quilometragem_veiculo": 0, "forma_pagamento": "Bank Transfer", "cidade": "Los Angeles", "estado": "CA", "vendedor": "Thomas King", "status_entrega": "Delivered"},
+            {"id_venda": 11, "data_str": "2024-05-25", "nome_cliente": "Isabella Moore", "modelo_porsche": "Panamera", "ano_modelo": 2023, "preco_venda": 132000.0, "quilometragem_veiculo": 4500, "forma_pagamento": "Lease", "cidade": "Miami", "estado": "FL", "vendedor": "Sarah White", "status_entrega": "Delivered"},
+            {"id_venda": 12, "data_str": "N/A", "nome_cliente": "Alexander Taylor", "modelo_porsche": "911 Carrera", "ano_modelo": 2022, "preco_venda": 115000.0, "quilometragem_veiculo": 11200, "forma_pagamento": "Wire Transfer", "cidade": "Chicago", "estado": "IL", "vendedor": "David Harris", "status_entrega": "Pending"},
+            {"id_venda": 13, "data_str": "N/A", "nome_cliente": "Mia Anderson", "modelo_porsche": "Cayenne E-Hybrid", "ano_modelo": 2024, "preco_venda": 98500.0, "quilometragem_veiculo": 0, "forma_pagamento": "Credit Card", "cidade": "San Francisco", "estado": "CA", "vendedor": "Rachel Martin", "status_entrega": "In Transit"},
+            {"id_venda": 14, "data_str": "2024-07-08", "nome_cliente": "William Thomas", "modelo_porsche": "Macan Gts", "ano_modelo": 2023, "preco_venda": 96300.0, "quilometragem_veiculo": 7100, "forma_pagamento": "Financing", "cidade": "Dallas", "estado": "TX", "vendedor": "Matthew Thompson", "status_entrega": "Delivered"},
+            {"id_venda": 15, "data_str": "2024-08-12", "nome_cliente": "Charlotte Jackson", "modelo_porsche": "718 Boxster", "ano_modelo": 2021, "preco_venda": 74500.0, "quilometragem_veiculo": 15600, "forma_pagamento": "Cash", "cidade": "Phoenix", "estado": "AZ", "vendedor": "Ashley Garcia", "status_entrega": "Cancelled"},
+            {"id_venda": 16, "data_str": "2024-08-20", "nome_cliente": "James White", "modelo_porsche": "Taycan Turbo", "ano_modelo": 2024, "preco_venda": 103500.0, "quilometragem_veiculo": 2100, "forma_pagamento": "Crypto Payment", "cidade": "San Jose", "estado": "CA", "vendedor": "Jason Martinez", "status_entrega": "Pending Approval"},
+            {"id_venda": 17, "data_str": "N/A", "nome_cliente": "Amelia Harris", "modelo_porsche": "911 Gt3", "ano_modelo": 2023, "preco_venda": 215000.0, "quilometragem_veiculo": 3800, "forma_pagamento": "Wire Transfer", "cidade": "Las Vegas", "estado": "NV", "vendedor": "Justin Robinson", "status_entrega": "Delivered"},
+            {"id_venda": 18, "data_str": "N/A", "nome_cliente": "Benjamin Martin", "modelo_porsche": "Cayenne Turbo Gt", "ano_modelo": 2024, "preco_venda": 148200.0, "quilometragem_veiculo": 500, "forma_pagamento": "Bank Transfer", "cidade": "Atlanta", "estado": "GA", "vendedor": "Andrew Clark", "status_entrega": "Awaiting Delivery"},
+            {"id_venda": 19, "data_str": "2024-09-05", "nome_cliente": "Evelyn Thompson", "modelo_porsche": "Panamera 4 E-Hybrid", "ano_modelo": 2022, "preco_venda": 168200.5, "quilometragem_veiculo": 8900, "forma_pagamento": "Lease", "cidade": "Houston", "estado": "TX", "vendedor": "Emily Rodriguez", "status_entrega": "Delivered"},
+            {"id_venda": 20, "data_str": "2024-09-15", "nome_cliente": "Lucas Garcia", "modelo_porsche": "Macan T", "ano_modelo": 2023, "preco_venda": 80000.0, "quilometragem_veiculo": 5200, "forma_pagamento": "Credit Card", "cidade": "San Diego", "estado": "CA", "vendedor": "Ryan Lewis", "status_entrega": "In Transit"},
+            {"id_venda": 21, "data_str": "N/A", "nome_cliente": "Harper Martinez", "modelo_porsche": "718 Cayman Gt4", "ano_modelo": 2021, "preco_venda": 110500.0, "quilometragem_veiculo": 12400, "forma_pagamento": "Wire Transfer", "cidade": "Charlotte", "estado": "NC", "vendedor": "Lauren Lee", "status_entrega": "Pending"},
+            {"id_venda": 22, "data_str": "N/A", "nome_cliente": "Henry Robinson", "modelo_porsche": "911 Targa 4S", "ano_modelo": 2024, "preco_venda": 185000.0, "quilometragem_veiculo": 0, "forma_pagamento": "Financing", "cidade": "Detroit", "estado": "MI", "vendedor": "Nicholas Walker", "status_entrega": "Delivered"},
+            {"id_venda": 23, "data_str": "N/A", "nome_cliente": "Abigail Clark", "modelo_porsche": "Cayenne", "ano_modelo": 2023, "preco_venda": 84500.0, "quilometragem_veiculo": 9100, "forma_pagamento": "Cash", "cidade": "Philadelphia", "estado": "PA", "vendedor": "Megan Hall", "status_entrega": "Shipped"},
+            {"id_venda": 24, "data_str": "N/A", "nome_cliente": "Jackson Rodriguez", "modelo_porsche": "Taycan Gts", "ano_modelo": 2024, "preco_venda": 139500.0, "quilometragem_veiculo": 1800, "forma_pagamento": "Bank Transfer", "cidade": "San Antonio", "estado": "TX", "vendedor": "Tyler Allen", "status_entrega": "Delivered"},
+            {"id_venda": 25, "data_str": "2024-12-01", "nome_cliente": "Ella Lewis", "modelo_porsche": "Panamera Gts", "ano_modelo": 2022, "preco_venda": 165800.0, "quilometragem_veiculo": 14200, "forma_pagamento": "Lease", "cidade": "Orlando", "estado": "FL", "vendedor": "Samantha Young", "status_entrega": "Cancelled"},
+            {"id_venda": 26, "data_str": "2024-12-10", "nome_cliente": "Sebastian Lee", "modelo_porsche": "911 Carrera S", "ano_modelo": 2023, "preco_venda": 150000.0, "quilometragem_veiculo": 6700, "forma_pagamento": "Wire Transfer", "cidade": "Portland", "estado": "OR", "vendedor": "Brandon King", "status_entrega": "In Transit"},
+            {"id_venda": 27, "data_str": "2025-01-20", "nome_cliente": "Avery Walker", "modelo_porsche": "Macan", "ano_modelo": 2021, "preco_venda": 58900.0, "quilometragem_veiculo": 22500, "forma_pagamento": "Credit Card", "cidade": "Raleigh", "estado": "NC", "vendedor": "Kayla Wright", "status_entrega": "Delivered"},
+            {"id_venda": 28, "data_str": "2025-02-14", "nome_cliente": "Carter Hall", "modelo_porsche": "718 Boxster S", "ano_modelo": 2024, "preco_venda": 95500.0, "quilometragem_veiculo": 0, "forma_pagamento": "Financing", "cidade": "Nashville", "estado": "TN", "vendedor": "Joshua Scott", "status_entrega": "Awaiting Pickup"},
+            {"id_venda": 29, "data_str": "2025-02-28", "nome_cliente": "Scarlett Allen", "modelo_porsche": "911 Turbo", "ano_modelo": 2023, "preco_venda": 97000.0, "quilometragem_veiculo": 4200, "forma_pagamento": "Cash", "cidade": "Salt Lake City", "estado": "UT", "vendedor": "Stephanie Green", "status_entrega": "Pending"},
+            {"id_venda": 30, "data_str": "N/A", "nome_cliente": "Owen Young", "modelo_porsche": "Cayenne S", "ano_modelo": 2022, "preco_venda": 105000.0, "quilometragem_veiculo": 13800, "forma_pagamento": "Bank Transfer", "cidade": "Minneapolis", "estado": "MN", "vendedor": "Kevin Baker", "status_entrega": "Delivered"},
+            {"id_venda": 31, "data_str": "2025-03-10", "nome_cliente": "Grace King", "modelo_porsche": "Taycan Cross Turismo", "ano_modelo": 2024, "preco_venda": 128500.0, "quilometragem_veiculo": 800, "forma_pagamento": "Lease", "cidade": "Indianapolis", "estado": "IN", "vendedor": "Amanda Adams", "status_entrega": "In Transit"},
+            {"id_venda": 32, "data_str": "N/A", "nome_cliente": "Wyatt Wright", "modelo_porsche": "Panamera", "ano_modelo": 2023, "preco_venda": 134200.0, "quilometragem_veiculo": 5500, "forma_pagamento": "Wire Transfer", "cidade": "Columbus", "estado": "OH", "vendedor": "Brian Nelson", "status_entrega": "Pending Review"},
+            {"id_venda": 33, "data_str": "2025-03-25", "nome_cliente": "Chloe Scott", "modelo_porsche": "911 Dakar", "ano_modelo": 2024, "preco_venda": 102250.0, "quilometragem_veiculo": 0, "forma_pagamento": "Credit Card", "cidade": "San Francisco", "estado": "CA", "vendedor": "Jessica Carter", "status_entrega": "Delivered"},
+            {"id_venda": 34, "data_str": "2025-04-05", "nome_cliente": "John Green", "modelo_porsche": "Macan S", "ano_modelo": 2022, "preco_venda": 86500.0, "quilometragem_veiculo": 10200, "forma_pagamento": "Financing", "cidade": "Los Angeles", "estado": "CA", "vendedor": "Thomas Mitchell", "status_entrega": "Awaiting Delivery"},
+            {"id_venda": 35, "data_str": "2025-05-12", "nome_cliente": "Zoey Baker", "modelo_porsche": "718 Cayman T", "ano_modelo": 2023, "preco_venda": 139000.0, "quilometragem_veiculo": 6100, "forma_pagamento": "Cash", "cidade": "Seattle", "estado": "WA", "vendedor": "Sarah Perez", "status_entrega": "Cancelled"},
+            {"id_venda": 36, "data_str": "N/A", "nome_cliente": "Luke Adams", "modelo_porsche": "911 Carrera T", "ano_modelo": 2024, "preco_venda": 125000.0, "quilometragem_veiculo": 1500, "forma_pagamento": "Crypto Payment", "cidade": "Austin", "estado": "TX", "vendedor": "David Roberts", "status_entrega": "Pending Approval"},
+            {"id_venda": 37, "data_str": "N/A", "nome_cliente": "Penelope Nelson", "modelo_porsche": "Cayenne Coupe E-Hybrid", "ano_modelo": 2022, "preco_venda": 112500.0, "quilometragem_veiculo": 16800, "forma_pagamento": "Wire Transfer", "cidade": "Denver", "estado": "CO", "vendedor": "Rachel Turner", "status_entrega": "Delivered"},
+            {"id_venda": 38, "data_str": "N/A", "nome_cliente": "Isaac Carter", "modelo_porsche": "Taycan", "ano_modelo": 2023, "preco_venda": 95800.0, "quilometragem_veiculo": 7500, "forma_pagamento": "Bank Transfer", "cidade": "Boston", "estado": "MA", "vendedor": "Matthew Phillips", "status_entrega": "In Transit"},
+            {"id_venda": 39, "data_str": "2025-06-18", "nome_cliente": "Riley Mitchell", "modelo_porsche": "Panamera 4", "ano_modelo": 2024, "preco_venda": 76800.0, "quilometragem_veiculo": 0, "forma_pagamento": "Lease", "cidade": "Miami", "estado": "FL", "vendedor": "Ashley Campbell", "status_entrega": "Delivered"},
+            {"id_venda": 40, "data_str": "2025-07-22", "nome_cliente": "Gabriel Perez", "modelo_porsche": "Macan Gts", "ano_modelo": 2021, "preco_venda": 132450.0, "quilometragem_veiculo": 19500, "forma_pagamento": "Credit Card", "cidade": "Chicago", "estado": "IL", "vendedor": "Jason Parker", "status_entrega": "Pending"},
+            {"id_venda": 41, "data_str": "2025-07-30", "nome_cliente": "Lily Roberts", "modelo_porsche": "718 Boxster Gts 4.0", "ano_modelo": 2023, "preco_venda": 96700.0, "quilometragem_veiculo": 4800, "forma_pagamento": "Financing", "cidade": "San Francisco", "estado": "CA", "vendedor": "Justin Evans", "status_entrega": "Shipped"},
+            {"id_venda": 42, "data_str": "N/A", "nome_cliente": "Anthony Turner", "modelo_porsche": "911 Gt3 Rs", "ano_modelo": 2024, "preco_venda": 286500.0, "quilometragem_veiculo": 300, "forma_pagamento": "Wire Transfer", "cidade": "Dallas", "estado": "TX", "vendedor": "Andrew Edwards", "status_entrega": "Delivered"},
+            {"id_venda": 43, "data_str": "N/A", "nome_cliente": "Hannah Phillips", "modelo_porsche": "Cayenne Turbo", "ano_modelo": 2022, "preco_venda": 135000.0, "quilometragem_veiculo": 12100, "forma_pagamento": "Cash", "cidade": "Phoenix", "estado": "AZ", "vendedor": "Emily Collins", "status_entrega": "Awaiting Pickup"},
+            {"id_venda": 44, "data_str": "2025-08-15", "nome_cliente": "Dylan Campbell", "modelo_porsche": "Taycan Turbo S", "ano_modelo": 2023, "preco_venda": 82000.0, "quilometragem_veiculo": 3200, "forma_pagamento": "Bank Transfer", "cidade": "Atlanta", "estado": "GA", "vendedor": "Ryan Stewart", "status_entrega": "Delivered"},
+            {"id_venda": 45, "data_str": "2025-09-02", "nome_cliente": "Victoria Parker", "modelo_porsche": "Panamera Turbo S", "ano_modelo": 2024, "preco_venda": 162200.0, "quilometragem_veiculo": 0, "forma_pagamento": "Lease", "cidade": "Houston", "estado": "TX", "vendedor": "Lauren Sanchez", "status_entrega": "Pending"},
+            {"id_venda": 46, "data_str": "2025-09-20", "nome_cliente": "David Evans", "modelo_porsche": "Macan T", "ano_modelo": 2022, "preco_venda": 150000.0, "quilometragem_veiculo": 18200, "forma_pagamento": "Wire Transfer", "cidade": "San Diego", "estado": "CA", "vendedor": "Nicholas Morris", "status_entrega": "In Transit"},
+            {"id_venda": 47, "data_str": "2025-10-10", "nome_cliente": "Nora Edwards", "modelo_porsche": "718 Cayman", "ano_modelo": 2024, "preco_venda": 82500.0, "quilometragem_veiculo": 0, "forma_pagamento": "Credit Card", "cidade": "Charlotte", "estado": "NC", "vendedor": "Megan Rogers", "status_entrega": "Delivered"},
+            {"id_venda": 48, "data_str": "2025-10-25", "nome_cliente": "Joseph Collins", "modelo_porsche": "911 Carrera", "ano_modelo": 2021, "preco_venda": 113900.0, "quilometragem_veiculo": 24000, "forma_pagamento": "Financing", "cidade": "Las Vegas", "estado": "NV", "vendedor": "Tyler Reed", "status_entrega": "Cancelled"},
+            {"id_venda": 49, "data_str": "2025-10-28", "nome_cliente": "Aria Stewart", "modelo_porsche": "Cayenne E-Hybrid", "ano_modelo": 2023, "preco_venda": 100000.0, "quilometragem_veiculo": 8500, "forma_pagamento": "Cash", "cidade": "Detroit", "estado": "MI", "vendedor": "Samantha Cook", "status_entrega": "Delivered"},
+            {"id_venda": 50, "data_str": "N/A", "nome_cliente": "Mateo Sanchez", "modelo_porsche": "Taycan 4S", "ano_modelo": 2022, "preco_venda": 118000.0, "quilometragem_veiculo": 15000, "forma_pagamento": "Crypto Payment", "cidade": "Philadelphia", "estado": "PA", "vendedor": "Brandon Morgan", "status_entrega": "Pending Approval"},
+            {"id_venda": 51, "data_str": "2025-11-05", "nome_cliente": "Elena Morris", "modelo_porsche": "Panamera", "ano_modelo": 2024, "preco_venda": 198300.0, "quilometragem_veiculo": 1200, "forma_pagamento": "Wire Transfer", "cidade": "San Antonio", "estado": "TX", "vendedor": "Kayla Bell", "status_entrega": "Delivered"},
+            {"id_venda": 52, "data_str": "2025-12-12", "nome_cliente": "Caleb Rogers", "modelo_porsche": "Macan", "ano_modelo": 2023, "preco_venda": 135000.0, "quilometragem_veiculo": 6800, "forma_pagamento": "Bank Transfer", "cidade": "Orlando", "estado": "FL", "vendedor": "Joshua Murphy", "status_entrega": "In Transit"},
+            {"id_venda": 53, "data_str": "2025-12-28", "nome_cliente": "Hazel Reed", "modelo_porsche": "718 Boxster", "ano_modelo": 2022, "preco_venda": 130000.0, "quilometragem_veiculo": 11500, "forma_pagamento": "Lease", "cidade": "Portland", "estado": "OR", "vendedor": "Stephanie Bailey", "status_entrega": "Pending"},
+            {"id_venda": 54, "data_str": "2026-01-15", "nome_cliente": "Christian Cook", "modelo_porsche": "911 Turbo S", "ano_modelo": 2024, "preco_venda": 142500.0, "quilometragem_veiculo": 0, "forma_pagamento": "Credit Card", "cidade": "Raleigh", "estado": "NC", "vendedor": "Kevin Rivera", "status_entrega": "Awaiting Delivery"},
+            {"id_venda": 55, "data_str": "2026-01-22", "nome_cliente": "Aurora Morgan", "modelo_porsche": "Cayenne Coupe", "ano_modelo": 2021, "preco_venda": 105800.0, "quilometragem_veiculo": 21000, "forma_pagamento": "Financing", "cidade": "Nashville", "estado": "TN", "vendedor": "Amanda Cooper", "status_entrega": "Delivered"},
+            {"id_venda": 56, "data_str": "2026-01-29", "nome_cliente": "Ryan Bell", "modelo_porsche": "Taycan Turbo", "ano_modelo": 2023, "preco_venda": 75400.0, "quilometragem_veiculo": 5400, "forma_pagamento": "Cash", "cidade": "Salt Lake City", "estado": "UT", "vendedor": "Brian Richardson", "status_entrega": "Cancelled"},
+            {"id_venda": 57, "data_str": "2026-02-08", "nome_cliente": "Stella Murphy", "modelo_porsche": "Panamera 4 E-Hybrid", "ano_modelo": 2024, "preco_venda": 82000.0, "quilometragem_veiculo": 200, "forma_pagamento": "Wire Transfer", "cidade": "Minneapolis", "estado": "MN", "vendedor": "Jessica Cox", "status_entrega": "Delivered"},
+            {"id_venda": 58, "data_str": "2026-02-18", "nome_cliente": "Nathan Bailey", "modelo_porsche": "Macan S", "ano_modelo": 2022, "preco_venda": 115200.0, "quilometragem_veiculo": 17400, "forma_pagamento": "Bank Transfer", "cidade": "Indianapolis", "estado": "IN", "vendedor": "Thomas Howard", "status_entrega": "Pending Review"},
+            {"id_venda": 59, "data_str": "2026-02-25", "nome_cliente": "Maya Rivera", "modelo_porsche": "718 Cayman Gt4", "ano_modelo": 2023, "preco_venda": 91000.0, "quilometragem_veiculo": 3900, "forma_pagamento": "Lease", "cidade": "Columbus", "estado": "OH", "vendedor": "Sarah Ward", "status_entrega": "In Transit"},
+            {"id_venda": 60, "data_str": "2026-03-05", "nome_cliente": "Julian Cooper", "modelo_porsche": "911 Targa 4S", "ano_modelo": 2024, "preco_venda": 115000.0, "quilometragem_veiculo": 0, "forma_pagamento": "Debit Card", "cidade": "San Francisco", "estado": "CA", "vendedor": "David Torres", "status_entrega": "Delivered"},
+            {"id_venda": 61, "data_str": "2026-03-12", "nome_cliente": "Leila Richardson", "modelo_porsche": "Cayenne", "ano_modelo": 2021, "preco_venda": 79300.0, "quilometragem_veiculo": 26500, "forma_pagamento": "Credit Card", "cidade": "Los Angeles", "estado": "CA", "vendedor": "Rachel Peterson", "status_entrega": "Pending"},
+            {"id_venda": 62, "data_str": "2026-04-02", "nome_cliente": "Asher Cox", "modelo_porsche": "Taycan Gts", "ano_modelo": 2023, "preco_venda": 125000.0, "quilometragem_veiculo": 9200, "forma_pagamento": "Financing", "cidade": "Seattle", "estado": "WA", "vendedor": "Matthew Gray", "status_entrega": "Delivered"},
+            {"id_venda": 63, "data_str": "2026-04-10", "nome_cliente": "Eleanor Howard", "modelo_porsche": "Panamera Gts", "ano_modelo": 2024, "preco_venda": 169000.0, "quilometragem_veiculo": 500, "forma_pagamento": "Cash", "cidade": "Austin", "estado": "TX", "vendedor": "Ashley Ramirez", "status_entrega": "Shipped"},
+            {"id_venda": 64, "data_str": "2026-04-18", "nome_cliente": "Levi Ward", "modelo_porsche": "Macan T", "ano_modelo": 2022, "preco_venda": 142000.0, "quilometragem_veiculo": 14800, "forma_pagamento": "Crypto Payment", "cidade": "Denver", "estado": "CO", "vendedor": "Jason James", "status_entrega": "Awaiting Pickup"},
+            {"id_venda": 65, "data_str": "2026-04-26", "nome_cliente": "Lucy Torres", "modelo_porsche": "718 Boxster S", "ano_modelo": 2023, "preco_venda": 134350.0, "quilometragem_veiculo": 7200, "forma_pagamento": "Wire Transfer", "cidade": "Boston", "estado": "MA", "vendedor": "Justin Watson", "status_entrega": "Delivered"},
+            {"id_venda": 66, "data_str": "2026-05-08", "nome_cliente": "Aaron Peterson", "modelo_porsche": "911 Carrera S", "ano_modelo": 2024, "preco_venda": 154500.0, "quilometragem_veiculo": 0, "forma_pagamento": "Bank Transfer", "cidade": "Miami", "estado": "FL", "vendedor": "Andrew Brooks", "status_entrega": "Cancelled"},
+            {"id_venda": 67, "data_str": "2026-05-15", "nome_cliente": "Nova Gray", "modelo_porsche": "Cayenne S", "ano_modelo": 2022, "preco_venda": 108000.0, "quilometragem_veiculo": 18500, "forma_pagamento": "Lease", "cidade": "Chicago", "estado": "IL", "vendedor": "Emily Kelly", "status_entrega": "In Transit"},
+            {"id_venda": 68, "data_str": "2026-05-22", "nome_cliente": "Eli Ramirez", "modelo_porsche": "Taycan Cross Turismo", "ano_modelo": 2023, "preco_venda": 132150.0, "quilometragem_veiculo": 6500, "forma_pagamento": "Credit Card", "cidade": "San Francisco", "estado": "CA", "vendedor": "Ryan Sanders", "status_entrega": "Delivered"},
+            {"id_venda": 69, "data_str": "2026-06-05", "nome_cliente": "Sofia James", "modelo_porsche": "Panamera", "ano_modelo": 2024, "preco_venda": 95000.0, "quilometragem_veiculo": 800, "forma_pagamento": "Financing", "cidade": "Dallas", "estado": "TX", "vendedor": "Lauren Price", "status_entrega": "Pending"},
+            {"id_venda": 70, "data_str": "2026-06-18", "nome_cliente": "Connor Watson", "modelo_porsche": "911 Dakar", "ano_modelo": 2024, "preco_venda": 213400.0, "quilometragem_veiculo": 0, "forma_pagamento": "Cash", "cidade": "Phoenix", "estado": "AZ", "vendedor": "Nicholas Bennett", "status_entrega": "Awaiting Delivery"},
+            {"id_venda": 71, "data_str": "2026-07-02", "nome_cliente": "Valentina Brooks", "modelo_porsche": "Macan S", "ano_modelo": 2022, "preco_venda": 138000.0, "quilometragem_veiculo": 16200, "forma_pagamento": "Wire Transfer", "cidade": "Atlanta", "estado": "GA", "vendedor": "Megan Wood", "status_entrega": "Delivered"},
+            {"id_venda": 72, "data_str": "2026-07-15", "nome_cliente": "Charles Kelly", "modelo_porsche": "718 Cayman T", "ano_modelo": 2023, "preco_venda": 139000.0, "quilometragem_veiculo": 8100, "forma_pagamento": "Bank Transfer", "cidade": "Houston", "estado": "TX", "vendedor": "Tyler Barnes", "status_entrega": "In Transit"},
+            {"id_venda": 73, "data_str": "2026-08-01", "nome_cliente": "Eliana Sanders", "modelo_porsche": "911 Carrera T", "ano_modelo": 2024, "preco_venda": 128500.0, "quilometragem_veiculo": 1200, "forma_pagamento": "Lease", "cidade": "San Diego", "estado": "CA", "vendedor": "Samantha Ross", "status_entrega": "Cancelled"},
+            {"id_venda": 74, "data_str": "2026-08-10", "nome_cliente": "Jeremiah Price", "modelo_porsche": "Cayenne Coupe E-Hybrid", "ano_modelo": 2022, "preco_venda": 97000.0, "quilometragem_veiculo": 15500, "forma_pagamento": "Debit Card", "cidade": "Charlotte", "estado": "NC", "vendedor": "Brandon Henderson", "status_entrega": "Delivered"},
+            {"id_venda": 75, "data_str": "2026-09-05", "nome_cliente": "Gianna Bennett", "modelo_porsche": "Taycan", "ano_modelo": 2023, "preco_venda": 115200.0, "quilometragem_veiculo": 10500, "forma_pagamento": "Credit Card", "cidade": "Las Vegas", "estado": "NV", "vendedor": "Kayla Coleman", "status_entrega": "Pending"},
+            {"id_venda": 76, "data_str": "2026-09-12", "nome_cliente": "Ezekiel Wood", "modelo_porsche": "Panamera 4", "ano_modelo": 2024, "preco_venda": 101000.0, "quilometragem_veiculo": 600, "forma_pagamento": "Financing", "cidade": "Detroit", "estado": "MI", "vendedor": "Joshua Jenkins", "status_entrega": "Shipped"},
+            {"id_venda": 77, "data_str": "2026-09-22", "nome_cliente": "Ivy Barnes", "modelo_porsche": "Macan Gts", "ano_modelo": 2021, "preco_venda": 106500.0, "quilometragem_veiculo": 28000, "forma_pagamento": "Cash", "cidade": "Philadelphia", "estado": "PA", "vendedor": "Stephanie Perry", "status_entrega": "Delivered"},
+            {"id_venda": 78, "data_str": "2026-10-08", "nome_cliente": "Hudson Ross", "modelo_porsche": "718 Boxster Gts 4.0", "ano_modelo": 2023, "preco_venda": 115000.0, "quilometragem_veiculo": 5500, "forma_pagamento": "Crypto Payment", "cidade": "San Antonio", "estado": "TX", "vendedor": "Kevin Powell", "status_entrega": "Pending Approval"},
+            {"id_venda": 79, "data_str": "2026-10-18", "nome_cliente": "Lydia Henderson", "modelo_porsche": "911 Gt3 Rs", "ano_modelo": 2024, "preco_venda": 158050.0, "quilometragem_veiculo": 0, "forma_pagamento": "Wire Transfer", "cidade": "Orlando", "estado": "FL", "vendedor": "Amanda Long", "status_entrega": "Delivered"},
+            {"id_venda": 80, "data_str": "2026-10-25", "nome_cliente": "Robert Coleman", "modelo_porsche": "Cayenne Turbo", "ano_modelo": 2022, "preco_venda": 143000.0, "quilometragem_veiculo": 14200, "forma_pagamento": "Bank Transfer", "cidade": "Portland", "estado": "OR", "vendedor": "Brian Patterson", "status_entrega": "In Transit"},
+            {"id_venda": 81, "data_str": "2026-11-05", "nome_cliente": "Josephine Jenkins", "modelo_porsche": "Taycan Turbo S", "ano_modelo": 2023, "preco_venda": 79900.0, "quilometragem_veiculo": 8800, "forma_pagamento": "Lease", "cidade": "Raleigh", "estado": "NC", "vendedor": "Jessica Hughes", "status_entrega": "Pending"},
+            {"id_venda": 82, "data_str": "2026-12-02", "nome_cliente": "Ian Perry", "modelo_porsche": "Panamera Turbo S", "ano_modelo": 2024, "preco_venda": 169000.0, "quilometragem_veiculo": 400, "forma_pagamento": "Credit Card", "cidade": "Nashville", "estado": "TN", "vendedor": "Thomas Flores", "status_entrega": "Delivered"},
+            {"id_venda": 83, "data_str": "2026-12-12", "nome_cliente": "Emilia Powell", "modelo_porsche": "Macan T", "ano_modelo": 2022, "preco_venda": 105400.0, "quilometragem_veiculo": 17800, "forma_pagamento": "Financing", "cidade": "Salt Lake City", "estado": "UT", "vendedor": "Sarah Washington", "status_entrega": "Awaiting Pickup"},
+            {"id_venda": 84, "data_str": "2026-12-28", "nome_cliente": "Colton Long", "modelo_porsche": "718 Cayman", "ano_modelo": 2024, "preco_venda": 226000.0, "quilometragem_veiculo": 0, "forma_pagamento": "Cash", "cidade": "Minneapolis", "estado": "MN", "vendedor": "David Butler", "status_entrega": "Delivered"},
+            {"id_venda": 85, "data_str": "2027-01-15", "nome_cliente": "Ruby Patterson", "modelo_porsche": "911 Carrera", "ano_modelo": 2021, "preco_venda": 108500.0, "quilometragem_veiculo": 25500, "forma_pagamento": "Wire Transfer", "cidade": "Indianapolis", "estado": "IN", "vendedor": "Rachel Simmons", "status_entrega": "In Transit"},
+            {"id_venda": 86, "data_str": "2027-01-22", "nome_cliente": "Cameron Hughes", "modelo_porsche": "Cayenne E-Hybrid", "ano_modelo": 2023, "preco_venda": 102900.0, "quilometragem_veiculo": 9800, "forma_pagamento": "Bank Transfer", "cidade": "Columbus", "estado": "OH", "vendedor": "Matthew Foster", "status_entrega": "Pending"},
+            {"id_venda": 87, "data_str": "2027-02-08", "nome_cliente": "Serenity Flores", "modelo_porsche": "Taycan 4S", "ano_modelo": 2022, "preco_venda": 69800.0, "quilometragem_veiculo": 16500, "forma_pagamento": "Lease", "cidade": "San Francisco", "estado": "CA", "vendedor": "Ashley Gonzales", "status_entrega": "Awaiting Review"},
+            {"id_venda": 88, "data_str": "2027-03-05", "nome_cliente": "Dominic Washington", "modelo_porsche": "Panamera", "ano_modelo": 2024, "preco_venda": 72500.0, "quilometragem_veiculo": 1500, "forma_pagamento": "Debit Card", "cidade": "Los Angeles", "estado": "CA", "vendedor": "Jason Bryant", "status_entrega": "Delivered"},
+            {"id_venda": 89, "data_str": "2027-03-18", "nome_cliente": "Autumn Butler", "modelo_porsche": "Macan", "ano_modelo": 2023, "preco_venda": 87400.0, "quilometragem_veiculo": 7500, "forma_pagamento": "Credit Card", "cidade": "Seattle", "estado": "WA", "vendedor": "Justin Alexander", "status_entrega": "Cancelled"},
+            {"id_venda": 90, "data_str": "2027-04-10", "nome_cliente": "Eli Simmons", "modelo_porsche": "718 Boxster", "ano_modelo": 2022, "preco_venda": 249300.0, "quilometragem_veiculo": 12800, "forma_pagamento": "Financing", "cidade": "Austin", "estado": "TX", "vendedor": "Andrew Russell", "status_entrega": "Delivered"},
+            {"id_venda": 91, "data_str": "2027-05-02", "nome_cliente": "Samantha Foster", "modelo_porsche": "911 Turbo S", "ano_modelo": 2024, "preco_venda": 115000.0, "quilometragem_veiculo": 0, "forma_pagamento": "Cash", "cidade": "Denver", "estado": "CO", "vendedor": "Emily Griffin", "status_entrega": "In Transit"},
+            {"id_venda": 92, "data_str": "2027-05-15", "nome_cliente": "Nicholas Gonzales", "modelo_porsche": "Cayenne Coupe", "ano_modelo": 2021, "preco_venda": 168000.0, "quilometragem_veiculo": 22500, "forma_pagamento": "Crypto Payment", "cidade": "Boston", "estado": "MA", "vendedor": "Ryan Diaz", "status_entrega": "Pending"},
+            {"id_venda": 93, "data_str": "2027-06-08", "nome_cliente": "Allison Bryant", "modelo_porsche": "Taycan Turbo", "ano_modelo": 2023, "preco_venda": 96800.0, "quilometragem_veiculo": 6200, "forma_pagamento": "Wire Transfer", "cidade": "Miami", "estado": "FL", "vendedor": "Lauren Hayes", "status_entrega": "Delivered"},
+            {"id_venda": 94, "data_str": "2027-07-01", "nome_cliente": "Hunter Alexander", "modelo_porsche": "Panamera 4 E-Hybrid", "ano_modelo": 2024, "preco_venda": 118400.0, "quilometragem_veiculo": 900, "forma_pagamento": "Bank Transfer", "cidade": "Chicago", "estado": "IL", "vendedor": "Nicholas Myers", "status_entrega": "Awaiting Delivery"},
+            {"id_venda": 95, "data_str": "2027-07-20", "nome_cliente": "Sadie Russell", "modelo_porsche": "Macan S", "ano_modelo": 2022, "preco_venda": 104500.0, "quilometragem_veiculo": 18900, "forma_pagamento": "Lease", "cidade": "San Francisco", "estado": "CA", "vendedor": "Megan Ford", "status_entrega": "Delivered"},
+            {"id_venda": 96, "data_str": "2027-08-12", "nome_cliente": "Christian Griffin", "modelo_porsche": "718 Cayman Gt4", "ano_modelo": 2023, "preco_venda": 71900.0, "quilometragem_veiculo": 4500, "forma_pagamento": "Credit Card", "cidade": "Dallas", "estado": "TX", "vendedor": "Tyler Hamilton", "status_entrega": "Shipped"},
+            {"id_venda": 97, "data_str": "2027-09-05", "nome_cliente": "Gabriella Diaz", "modelo_porsche": "911 Targa 4S", "ano_modelo": 2024, "preco_venda": 255000.0, "quilometragem_veiculo": 0, "forma_pagamento": "Financing", "cidade": "Phoenix", "estado": "AZ", "vendedor": "Samantha Graham", "status_entrega": "In Transit"},
+            {"id_venda": 98, "data_str": "2027-09-28", "nome_cliente": "Xavier Hayes", "modelo_porsche": "Cayenne", "ano_modelo": 2021, "preco_venda": 87300.0, "quilometragem_veiculo": 28000, "forma_pagamento": "Cash", "cidade": "Atlanta", "estado": "GA", "vendedor": "Brandon Sullivan", "status_entrega": "Delivered"},
+            {"id_venda": 99, "data_str": "2027-10-10", "nome_cliente": "Aaliyah Myers", "modelo_porsche": "Taycan Gts", "ano_modelo": 2023, "preco_venda": 271700.0, "quilometragem_veiculo": 10200, "forma_pagamento": "Wire Transfer", "cidade": "Houston", "estado": "TX", "vendedor": "Kayla Wallace", "status_entrega": "Pending"},
+            {"id_venda": 100, "data_str": "N/A", "nome_cliente": "Jaxon Ford", "modelo_porsche": "Panamera Gts", "ano_modelo": 2024, "preco_venda": 169000.0, "quilometragem_veiculo": 800, "forma_pagamento": "Ach Payment", "cidade": "San Diego", "estado": "CA", "vendedor": "Joshua Woods", "status_entrega": "Pending Approval"},
+            {"id_venda": 101, "data_str": "N/A", "nome_cliente": "Madelyn Hamilton", "modelo_porsche": "Macan T", "ano_modelo": 2022, "preco_venda": 92500.0, "quilometragem_veiculo": 19200, "forma_pagamento": "Ach Payment", "cidade": "Charlotte", "estado": "NC", "vendedor": "Stephanie Cole", "status_entrega": "Delivered"},
+            {"id_venda": 102, "data_str": "N/A", "nome_cliente": "Declan Graham", "modelo_porsche": "718 Boxster S", "ano_modelo": 2023, "preco_venda": 103000.0, "quilometragem_veiculo": 6800, "forma_pagamento": "Ach Payment", "cidade": "Las Vegas", "estado": "NV", "vendedor": "Kevin West", "status_entrega": "Delivered"},
+            {"id_venda": 103, "data_str": "N/A", "nome_cliente": "Skylar Sullivan", "modelo_porsche": "911 Carrera S", "ano_modelo": 2024, "preco_venda": 162500.0, "quilometragem_veiculo": 0, "forma_pagamento": "Debit Card", "cidade": "Detroit", "estado": "MI", "vendedor": "Amanda Jordan", "status_entrega": "In Transit"},
+            {"id_venda": 104, "data_str": "N/A", "nome_cliente": "Ezra Wallace", "modelo_porsche": "Cayenne S", "ano_modelo": 2022, "preco_venda": 112000.0, "quilometragem_veiculo": 16500, "forma_pagamento": "Ach Payment", "cidade": "Philadelphia", "estado": "PA", "vendedor": "Brian Owens", "status_entrega": "Delivered"},
+            {"id_venda": 105, "data_str": "N/A", "nome_cliente": "Paisley Woods", "modelo_porsche": "911 Dakar", "ano_modelo": 2024, "preco_venda": 294950.0, "quilometragem_veiculo": 50, "forma_pagamento": "Crypto Payment", "cidade": "San Antonio", "estado": "TX", "vendedor": "Jessica Reynolds", "status_entrega": "Delivered"}
+        ];
+
+        let currentData = [...rawData];
+        let charts = {};
+
+        // Formatting Utils (Brazilian Standard)
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat('pt-BR', { 
+                style: 'currency', 
+                currency: 'BRL',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        };
+        const formatNumber = (value) => new Intl.NumberFormat('pt-BR').format(value);
+
+        // Chart.js Global Defaults for dark theme
+        Chart.defaults.color = '#A0A0A0';
+        Chart.defaults.font.family = 'Inter, sans-serif';
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(20, 20, 20, 0.95)';
+        Chart.defaults.plugins.tooltip.titleColor = '#FCEFD8';
+        Chart.defaults.plugins.tooltip.bodyColor = '#F8F9FA';
+        Chart.defaults.plugins.tooltip.borderColor = '#D48A96';
+        Chart.defaults.plugins.tooltip.borderWidth = 1;
+        Chart.defaults.plugins.tooltip.padding = 12;
+        Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+        function init() {
+            populateFilters();
+            updateDashboard();
+            setupEventListeners();
+        }
+
+        function populateFilters() {
+            const models = [...new Set(rawData.map(d => d.modelo_porsche))].sort();
+            const statuses = [...new Set(rawData.map(d => d.status_entrega))].sort();
+            const states = [...new Set(rawData.map(d => d.estado))].sort();
+
+            const appendOptions = (selectId, options) => {
+                const select = document.getElementById(selectId);
+                options.forEach(opt => {
+                    const el = document.createElement('option');
+                    el.value = opt;
+                    el.textContent = opt;
+                    select.appendChild(el);
+                });
+            };
+
+            appendOptions('filter-model', models);
+            appendOptions('filter-status', statuses);
+            appendOptions('filter-state', states);
+        }
+
+        function applyFilters() {
+            const modelFilter = document.getElementById('filter-model').value;
+            const statusFilter = document.getElementById('filter-status').value;
+            const stateFilter = document.getElementById('filter-state').value;
+
+            currentData = rawData.filter(d => {
+                const matchModel = modelFilter === 'all' || d.modelo_porsche === modelFilter;
+                const matchStatus = statusFilter === 'all' || d.status_entrega === statusFilter;
+                const matchState = stateFilter === 'all' || d.estado === stateFilter;
+                return matchModel && matchStatus && matchState;
+            });
+
+            updateDashboard();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('filter-model').addEventListener('change', applyFilters);
+            document.getElementById('filter-status').addEventListener('change', applyFilters);
+            document.getElementById('filter-state').addEventListener('change', applyFilters);
+            
+            document.getElementById('btn-reset').addEventListener('click', () => {
+                document.getElementById('filter-model').value = 'all';
+                document.getElementById('filter-status').value = 'all';
+                document.getElementById('filter-state').value = 'all';
+                applyFilters();
+            });
+        }
+
+        function updateDashboard() {
+            updateKPIs();
+            updateInsights();
+            renderTable();
+            updateCharts();
+        }
+
+        function updateInsights() {
+            const insightEl = document.getElementById('insight-text');
+            
+            if (currentData.length === 0) {
+                insightEl.innerHTML = "Nenhum dado encontrado para os filtros selecionados.";
+                return;
+            }
+
+            // Group by City and find the most popular model in each
+            const cityModelCounts = {};
+            currentData.forEach(d => {
+                const city = d.cidade;
+                const model = d.modelo_porsche;
+                if (!cityModelCounts[city]) cityModelCounts[city] = {};
+                if (!cityModelCounts[city][model]) cityModelCounts[city][model] = 0;
+                cityModelCounts[city][model]++;
+            });
+
+            // Find top cities by total volume in current selection (up to 3)
+            const cityVols = Object.keys(cityModelCounts).map(city => {
+                const total = Object.values(cityModelCounts[city]).reduce((a, b) => a + b, 0);
+                
+                // Find best selling model in this city
+                let topModel = '';
+                let maxCount = 0;
+                for (const [model, count] of Object.entries(cityModelCounts[city])) {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        topModel = model;
+                    }
+                }
+                
+                return { city, total, topModel, maxCount };
+            }).sort((a, b) => b.total - a.total).slice(0, 3);
+
+            if (cityVols.length > 0) {
+                let html = `Com base nos filtros atuais, destacamos as preferências locais: `;
+                const highlights = cityVols.map(c => {
+                    return `<strong class="text-porsche-champagne">${c.city}</strong> tem forte preferência pelo <span class="text-porsche-rosegold">${c.topModel}</span> (${c.maxCount} unid.)`;
+                });
+                
+                html += highlights.join(' • ');
+                
+                // Add a general stat
+                const topOverallModel = [...currentData].reduce((acc, curr) => {
+                    acc[curr.modelo_porsche] = (acc[curr.modelo_porsche] || 0) + 1;
+                    return acc;
+                }, {});
+                const absoluteTop = Object.keys(topOverallModel).reduce((a, b) => topOverallModel[a] > topOverallModel[b] ? a : b);
+                
+                html += `<br><br><span class="text-xs opacity-75">O <strong class="text-white">${absoluteTop}</strong> desponta como o modelo com maior liquidez no recorte atual.</span>`;
+                
+                insightEl.innerHTML = html;
+            }
+        }
+
+        function updateKPIs() {
+            const totalRev = currentData.reduce((sum, item) => sum + item.preco_venda, 0);
+            const volume = currentData.length;
+            const ticket = volume > 0 ? totalRev / volume : 0;
+            const newCars = currentData.filter(item => item.quilometragem_veiculo === 0).length;
+            const usedCars = volume - newCars;
+
+            document.getElementById('kpi-revenue').textContent = formatCurrency(totalRev);
+            document.getElementById('kpi-volume').innerHTML = `${formatNumber(volume)} <span class="text-sm font-sans text-porsche-gray font-normal">unidades</span>`;
+            document.getElementById('kpi-ticket').textContent = formatCurrency(ticket);
+            document.getElementById('kpi-new').textContent = formatNumber(newCars);
+            document.getElementById('kpi-used').textContent = formatNumber(usedCars);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            // Limit to 10 for table to not clutter
+            const displayData = currentData.slice(0, 10);
+            
+            displayData.forEach(item => {
+                const statusColors = {
+                    'Delivered': 'text-green-400 bg-green-400/10',
+                    'Cancelled': 'text-red-400 bg-red-400/10',
+                    'Pending': 'text-yellow-400 bg-yellow-400/10',
+                    'In Transit': 'text-blue-400 bg-blue-400/10'
+                };
+                
+                const statusStyle = statusColors[item.status_entrega] || 'text-porsche-rosegold bg-porsche-rosegold/10';
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-porsche-border/50 hover:bg-porsche-card transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-4">
+                        <div class="font-medium text-porsche-light">${item.nome_cliente}</div>
+                        <div class="text-xs text-porsche-gray">ID: #${item.id_venda}</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="font-medium text-porsche-light">${item.modelo_porsche}</div>
+                        <div class="text-xs text-porsche-gray">${item.ano_modelo} • ${formatNumber(item.quilometragem_veiculo)} km</div>
+                    </td>
+                    <td class="py-3 px-4 text-right font-medium text-porsche-champagne">${formatCurrency(item.preco_venda)}</td>
+                    <td class="py-3 px-4 text-porsche-gray">${item.forma_pagamento}</td>
+                    <td class="py-3 px-4 text-porsche-gray">${item.cidade}, ${item.estado}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-medium border border-current ${statusStyle}">
+                            ${item.status_entrega}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('table-info').textContent = `Mostrando ${displayData.length} de ${currentData.length} registros`;
+        }
+
+        function updateCharts() {
+            // Helper to aggregate data
+            const aggregate = (key, valKey = null, sortDesc = true) => {
+                const map = {};
+                currentData.forEach(d => {
+                    const k = d[key];
+                    const v = valKey ? d[valKey] : 1;
+                    map[k] = (map[k] || 0) + v;
+                });
+                let arr = Object.keys(map).map(k => ({ label: k, value: map[k] }));
+                if (sortDesc) arr.sort((a, b) => b.value - a.value);
+                return arr;
+            };
+
+            // 1. Revenue by Model Chart (Bar)
+            const revData = aggregate('modelo_porsche', 'preco_venda').slice(0, 10);
+            
+            if (charts.revenue) charts.revenue.destroy();
+            const ctxRev = document.getElementById('chartRevenue').getContext('2d');
+            
+            // Vibrant Gradient for bars
+            const gradientRev = ctxRev.createLinearGradient(0, 0, 600, 0);
+            gradientRev.addColorStop(0, '#A65D68'); // Darker Rosegold base
+            gradientRev.addColorStop(0.5, '#D48A96'); // Vibrant Rosegold mid
+            gradientRev.addColorStop(1, '#FCEFD8'); // Champagne tip
+
+            charts.revenue = new Chart(ctxRev, {
+                type: 'bar',
+                data: {
+                    labels: revData.map(d => d.label),
+                    datasets: [{
+                        label: 'Receita',
+                        data: revData.map(d => d.value),
+                        backgroundColor: gradientRev,
+                        borderRadius: 6,
+                        barThickness: 16,
+                        borderWidth: 0,
+                        hoverBackgroundColor: '#FCEFD8' // Highlight on hover
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: { left: 10, right: 15 }
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            grid: { color: '#2a2a2a', drawBorder: false }, 
+                            ticks: { 
+                                callback: (val) => 'R$ ' + (val/1000) + 'k',
+                                font: { size: 11 }
+                            } 
+                        },
+                        y: { 
+                            grid: { display: false },
+                            ticks: { 
+                                font: { family: 'Inter', weight: '500' }, 
+                                color: '#F8F9FA',
+                                autoSkip: false,
+                                padding: 8
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Payment Methods (Pie -> Doughnut for modern look)
+            const payData = aggregate('forma_pagamento');
+            
+            if (charts.payment) charts.payment.destroy();
+            const ctxPay = document.getElementById('chartPayment').getContext('2d');
+            
+            // Rich, feminine, yet professional color palette for pie chart
+            const pieColors = [
+                '#D48A96', // Rosegold
+                '#B46C77', // Muted Rose
+                '#8F4A57', // Deep Rose
+                '#FCEFD8', // Champagne
+                '#E1CBA7', // Sand
+                '#7F6A7C', // Dusty Plum
+                '#5A4E5D', // Dark Plum
+                '#3D3D3D', // Dark Gray
+                '#252525'
+            ];
+
+            charts.payment = new Chart(ctxPay, {
+                type: 'doughnut',
+                data: {
+                    labels: payData.map(d => d.label),
+                    datasets: [{
+                        data: payData.map(d => d.value),
+                        backgroundColor: pieColors,
+                        borderWidth: 2,
+                        borderColor: '#141414',
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { 
+                            position: 'right', 
+                            labels: { 
+                                boxWidth: 10, 
+                                usePointStyle: true, 
+                                padding: 15,
+                                color: '#A0A0A0',
+                                font: { size: 11 }
+                            } 
+                        }
+                    }
+                }
+            });
+
+            // 3. Delivery Status (Bar)
+            const statusData = aggregate('status_entrega');
+            
+            if (charts.status) charts.status.destroy();
+            const ctxStatus = document.getElementById('chartStatus').getContext('2d');
+            
+            const statusBarColors = [
+                '#D48A96', // Rosegold vibrante
+                '#E1CBA7', // Sand (Areia)
+                '#B46C77', // Rose suave
+                '#FCEFD8', // Champagne
+                '#8F4A57', // Rose profundo
+                '#7F6A7C', // Ameixa empoeirado (Dusty Plum)
+                '#A65D68', // Rosegold escuro
+                '#5A4E5D', // Ameixa escuro
+                '#C5A3A9', // Malva suave
+                '#E8D5D8'  // Rosa muito pálido
+            ];
+
+            charts.status = new Chart(ctxStatus, {
+                type: 'bar',
+                data: {
+                    labels: statusData.map(d => d.label),
+                    datasets: [{
+                        label: 'Qtd Veículos',
+                        data: statusData.map(d => d.value),
+                        backgroundColor: statusBarColors.slice(0, statusData.length), // Cores variadas
+                        hoverBackgroundColor: '#FFFFFF', // Highlight branco e limpo no hover
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false } 
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#A0A0A0' }
+                        },
+                        y: { 
+                            grid: { color: '#2a2a2a', drawBorder: false },
+                            ticks: { precision: 0, stepSize: 1, color: '#A0A0A0' } 
+                        }
+                    }
+                }
+            });
+
+            // 4. Top 5 Cidades por Volume de Vendas
+            if (charts.cities) charts.cities.destroy();
+            const ctxCities = document.getElementById('chartCities').getContext('2d');
+
+            // Passo 1: Agrupar por Cidade, somar total e contar modelos
+            const cityStats = {};
+            currentData.forEach(d => {
+                const city = d.cidade;
+                if (!cityStats[city]) cityStats[city] = { total: 0, models: {} };
+                cityStats[city].total += 1;
+                cityStats[city].models[d.modelo_porsche] = (cityStats[city].models[d.modelo_porsche] || 0) + 1;
+            });
+
+            // Passo 2: Transformar em array, encontrar modelo líder, ordenar e pegar top 5
+            const top5Cities = Object.keys(cityStats)
+                .map(city => {
+                    const stats = cityStats[city];
+                    const topModel = Object.keys(stats.models).reduce((a, b) => stats.models[a] > stats.models[b] ? a : b);
+                    return { city, total: stats.total, topModel };
+                })
+                .sort((a, b) => b.total - a.total)
+                .slice(0, 5);
+
+            // Passo 3: Criar gráfico de barras horizontais
+            charts.cities = new Chart(ctxCities, {
+                type: 'bar',
+                data: {
+                    labels: top5Cities.map(c => c.city),
+                    datasets: [{
+                        data: top5Cities.map(c => c.total),
+                        backgroundColor: '#D48A96', // Única cor rose gold
+                        borderRadius: 6,
+                        barThickness: 24, // Barra com espessura fixa para visual limpo
+                        hoverBackgroundColor: '#FCEFD8'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Barras Horizontais
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: { left: 15, right: 40 } // Espaço para não cortar os nomes na esquerda, e para os números na direita
+                    },
+                    plugins: { 
+                        legend: { display: false }, // Sem legenda
+                        tooltip: {
+                            callbacks: {
+                                title: (context) => `Cidade: ${context[0].label}`,
+                                label: (context) => {
+                                    const cityData = top5Cities[context.dataIndex];
+                                    return [
+                                        `Vendas: ${cityData.total}`,
+                                        `Modelo Líder: ${cityData.topModel}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            display: false, // Esconde eixo X para ficar minimalista
+                            grid: { display: false }
+                        },
+                        y: { 
+                            grid: { display: false },
+                            ticks: { 
+                                font: { family: 'Inter', weight: '500' }, 
+                                color: '#F8F9FA',
+                                autoSkip: false, // Garante que a cidade não será cortada/ocultada
+                                padding: 8 // Distância mais limpa entre o texto e a barra
+                            }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'customDataLabels',
+                    afterDatasetsDraw(chart) {
+                        const { ctx, data } = chart;
+                        ctx.save();
+                        ctx.font = 'bold 13px Inter';
+                        ctx.fillStyle = '#FCEFD8'; // Texto Champagne
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'middle';
+
+                        chart.getDatasetMeta(0).data.forEach((bar, index) => {
+                            const value = data.datasets[0].data[index];
+                            // Desenha o número no final da barra (+8px de margem)
+                            ctx.fillText(value, bar.x + 8, bar.y);
+                        });
+                        ctx.restore();
+                    }
+                }]
+            });
+        }
+
+        // Run Init
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
