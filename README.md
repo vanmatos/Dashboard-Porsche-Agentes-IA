@@ -6,6 +6,12 @@ O projeto teve como objetivo explorar como ferramentas de IA podem ser utilizada
 
 ---
 
+<p align="center">
+  <img src="PorscheAnalytics.gif" alt="Dashboard Porsche Analytics" width="90%">
+</p>
+
+---
+
 ## 🎯 Objetivo do Projeto
 
 Transformar uma base de vendas de veículos em um dashboard interativo capaz de apresentar indicadores, análises e insights sobre o desempenho comercial.
