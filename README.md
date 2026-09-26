@@ -124,6 +124,6 @@ A solução também evidencia a importância da **avaliação e revisão humana*
 
 ---
 
-### 👩‍💻 Projeto desenvolvido por Vanessa Albuquerque
+### 👩‍💻 Projeto desenvolvido por vanmatos
 
 **Dashboard de Vendas Porsche | Agentes de IA | BI & Data Analytics**
