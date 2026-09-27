@@ -68,20 +68,33 @@ Crie esse dashboard em HTML/CSS/JS.
 
 Para o direcionamento visual, foi solicitado um design sofisticado, inspirado na identidade visual da **Porsche Brasil**, com um toque feminino e sem elementos infantis.
 
-### 🔄 Refinamentos
+## 🔄 Refinamentos
 
-Após a geração inicial, o dashboard foi avaliado e refinado iterativamente. Entre os principais ajustes realizados:
+Após a geração inicial do dashboard, as visualizações foram avaliadas
+e refinadas de forma iterativa.
+
+Um dos ajustes ocorreu no gráfico **“Preferência por Região (Top Cidades)”**,
+que foi considerado visualmente confuso devido à quantidade de informações
+apresentadas simultaneamente.
+
+Foi solicitado à IA que substituísse o gráfico por **“Top 5 Cidades por Volume de Vendas”**,
+com barras horizontais na cor rose gold, ordenação decrescente, número de vendas
+e tooltip com cidade, vendas e modelo líder.
+
+### Outros ajustes solicitados:
 
 * Padronização dos valores monetários para o formato `1.000,00`;
 * Ajustes de cores e visualizações;
 * Inclusão de insights sobre modelos mais vendidos por cidade;
 * Reformulação dos gráficos relacionados a status de entrega e distribuição regional;
-* Criação do gráfico **Top 5 Cidades por Volume de Vendas**, com barras horizontais, ordenação decrescente, cor rose gold, número de vendas e tooltip com cidade, vendas e modelo líder;
 * Inclusão de cabeçalho para identificação da empresa.
 
-Na revisão final, foi identificado que o título **“Funil Logístico (Status de Entrega)”** não correspondia adequadamente à visualização apresentada. Nesse caso, em vez de solicitar uma nova alteração à IA, o arquivo HTML foi editado manualmente para corrigir o título.
+Na revisão final, foi identificado que o título **“Funil Logístico (Status de Entrega)”**
+não correspondia adequadamente à visualização apresentada. Nesse caso, em vez de
+solicitar uma nova alteração à IA, o arquivo HTML foi editado manualmente para
+corrigir o título.
 
-Esse processo evidencia a utilização da **revisão humana sobre o resultado gerado pela IA**.
+Esse processo evidencia a **revisão humana sobre o resultado gerado pela IA**.
 
 ---
 
